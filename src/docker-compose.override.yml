@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+  catalogdb:
+    container_name: catalogdb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      # Copying data in mongo_data, that has already been created by container in directory /data/db 
+      - mongo_data:/data/db
+  catalog.api:
+    container_name: catalog.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Overwrite dbsetting in app.setting.json file
+      # Note here we have changed localhost to mongodb, since docker file can read only from a container
+      - "DatabaseSettings:ConnectionString=mongodb://catalogdb:27017"
+    depends_on:
+      - catalogdb
+    ports:
+      # We will create other microservices as well, so have to port fwd to unique port
+      - "8000:80"
+    volumes:
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
